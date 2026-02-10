@@ -28,3 +28,6 @@ build/
 
 # Eval results (optional)
 eval/results/
+
+# Local slides (not pushed to git)
+slides/
