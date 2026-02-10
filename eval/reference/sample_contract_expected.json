@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "compliance_question": "Password Management",
+      "compliance_state": "Fully Compliant",
+      "relevant_quotes": "Section 6.6; Exhibit G (G3A) PASS-01 to PASS-04",
+      "rationale": "Contract requires documented password standard, length/strength, no default/compromised passwords, secure storage, lockout, no sharing, vaulting, break-glass rotation."
+    },
+    {
+      "compliance_question": "IT Asset Management",
+      "compliance_state": "Fully Compliant",
+      "relevant_quotes": "Sections 9.1-9.3; Exhibit G ASSET-01 to ASSET-03",
+      "rationale": "Contract requires in-scope asset inventory, minimum fields, quarterly review, secure configuration baselines, prohibition of insecure defaults."
+    },
+    {
+      "compliance_question": "Security Training & Background Checks",
+      "compliance_state": "Fully Compliant",
+      "relevant_quotes": "Exhibit G GOV-04, GOV-05",
+      "rationale": "Contract requires security awareness training on hire and annually, and background screening to the extent permitted by law with policy and attestation."
+    },
+    {
+      "compliance_question": "Data in Transit Encryption",
+      "compliance_state": "Fully Compliant",
+      "relevant_quotes": "Section 7.2; Exhibit G CRYP-01",
+      "rationale": "Contract requires TLS 1.2+ (TLS 1.3 where feasible) for Company-to-Service, admin pathways, and subprocessor transfers, with certificate management."
+    },
+    {
+      "compliance_question": "Network Authentication & Authorization Protocols",
+      "compliance_state": "Fully Compliant",
+      "relevant_quotes": "Sections 6.7, 8.2; Exhibit G NET-01 to NET-03",
+      "rationale": "Contract specifies SAML SSO, OAuth for APIs, MFA for privileged/production, bastion/secure gateway with session logging, RBAC."
+    }
+  ]
+}
