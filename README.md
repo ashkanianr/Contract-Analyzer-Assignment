@@ -5,7 +5,7 @@ End-to-end prototype: upload a PDF contract, get structured compliance analysis 
 ## Requirements
 
 - Python 3.10+
-- API keys: **GOOGLE_API_KEY** (Gemini); optionally **OPENROUTER_API_KEY** for backup when primary hits rate limit.
+- API keys: **GOOGLE_API_KEY** (Gemini); optionally **OPENROUTER_API_KEY** for backup when primary hits rate limit. Default model: **Gemini 3 Flash Preview**.
 
 ## Quick start
 
@@ -18,7 +18,18 @@ python -m venv .venv
 # source .venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
 pip install --upgrade google-genai
-set GOOGLE_API_KEY=your_key_here
+```
+
+Copy `.env.example` to `.env` and add your keys:
+
+```bash
+copy .env.example .env
+# Edit .env: set GOOGLE_API_KEY=your_key_here (and optionally OPENROUTER_API_KEY)
+```
+
+Then run:
+
+```bash
 uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -41,11 +52,15 @@ streamlit run app.py
 
 ## Environment variables
 
+Set them in `.env` (copy from `.env.example`) or in your shell. Do not commit `.env` to git.
+
 | Variable | Description |
 |----------|-------------|
 | `GOOGLE_API_KEY` | Gemini API key (AI Studio). Required for primary LLM. |
 | `OPENROUTER_API_KEY` | Optional. Used when primary returns 429/quota. |
 | `LLM_PRIMARY` | `google` (default) or `openrouter`. |
+| `LLM_MODEL_GOOGLE` | Default: `gemini-3-flash-preview`. |
+| `LLM_MODEL_OPENROUTER` | Default: `google/gemini-3-flash-preview`. |
 | `BACKEND_URL` | Backend base URL for the Streamlit app (default `http://localhost:8000`). |
 
 ## Project structure
