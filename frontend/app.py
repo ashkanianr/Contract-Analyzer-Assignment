@@ -31,12 +31,17 @@ def main():
                 data = r.json()
             except httpx.HTTPStatusError as e:
                 st.error(f"Analysis failed: {e.response.status_code} – {e.response.text[:500]}")
-                return
             except Exception as e:
                 st.error(f"Request failed: {e}")
-                return
+            else:
+                st.session_state["last_result"] = data
+                st.session_state["analyzed"] = True
+                st.session_state["messages"] = []  # clear chat when new analysis
 
-        st.success(f"Done. Pages: {data.get('page_count', 'N/A')}")
+    # Always show compliance results if we have them (so they don't disappear when using chat)
+    if st.session_state.get("last_result"):
+        data = st.session_state["last_result"]
+        st.success(f"Analysis complete. Pages: {data.get('page_count', 'N/A')}")
         compliance = data.get("compliance", {})
         items = compliance.get("items", [])
         for i, item in enumerate(items):
@@ -55,10 +60,8 @@ def main():
                 st.markdown(f"**Rationale**\n{item.get('rationale', '')}")
                 if item.get("confidence") is not None:
                     st.caption(f"Confidence: {item['confidence']}%")
-        st.session_state["last_result"] = data
-        st.session_state["analyzed"] = True
 
-    # Chat (bonus) – informational only
+    # Chat (bonus) – informational only; use form so question is sent once
     st.markdown("---")
     st.subheader("Chat (informational only)")
     st.caption("Compliance decisions always come from the structured analyzer above. This chat is for Q&A over the document only.")
@@ -70,19 +73,24 @@ def main():
             st.markdown(f"**{role}:**")
             st.write(msg["content"])
             st.markdown("")
-        prompt = st.text_input("Ask about the contract", key="chat_input")
-        if prompt:
-            st.session_state["messages"].append({"role": "user", "content": prompt})
-            try:
-                with httpx.Client(timeout=60.0) as client:
-                    r = client.post(
-                        f"{base}/chat",
-                        json={"message": prompt},
-                    )
-                r.raise_for_status()
-                reply = r.json().get("reply", "No reply.")
-            except Exception as e:
-                reply = f"Error: {e}"
+
+        with st.form("chat_form", clear_on_submit=True):
+            prompt = st.text_input("Ask about the contract", key="chat_input")
+            submitted = st.form_submit_button("Send")
+        if submitted and prompt and prompt.strip():
+            user_msg = prompt.strip()
+            st.session_state["messages"].append({"role": "user", "content": user_msg})
+            with st.spinner("Thinking…"):
+                try:
+                    with httpx.Client(timeout=60.0) as client:
+                        r = client.post(
+                            f"{base}/chat",
+                            json={"message": user_msg},
+                        )
+                    r.raise_for_status()
+                    reply = r.json().get("reply", "No reply.")
+                except Exception as e:
+                    reply = f"Error: {e}"
             st.session_state["messages"].append({"role": "assistant", "content": reply})
             try:
                 st.rerun()
