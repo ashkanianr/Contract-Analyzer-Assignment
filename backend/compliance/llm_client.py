@@ -92,9 +92,18 @@ def generate(prompt: str, system: str = "", json_mode: bool = True) -> str:
             result = _call_google(prompt, system, json_mode)
     except Exception as e:
         err_str = str(e).lower()
-        is_quota = "429" in err_str or "quota" in err_str or "resource" in err_str
-        if is_quota and OPENROUTER_API_KEY and LLM_PRIMARY != "openrouter":
-            logger.warning("Primary LLM limit hit, retrying with OpenRouter: %s", e)
+        # Retry with OpenRouter on rate limit, quota, overload (503), or temporary unavailability
+        is_retryable = (
+            "429" in err_str
+            or "503" in err_str
+            or "quota" in err_str
+            or "resource" in err_str
+            or "unavailable" in err_str
+            or "high demand" in err_str
+            or "overloaded" in err_str
+        )
+        if is_retryable and OPENROUTER_API_KEY and LLM_PRIMARY != "openrouter":
+            logger.warning("Primary LLM unavailable (retryable), using OpenRouter: %s", e)
             result = _call_openrouter(prompt, system, json_mode)
             used = "openrouter"
         else:
