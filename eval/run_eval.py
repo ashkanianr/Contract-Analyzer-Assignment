@@ -36,7 +36,7 @@ def main():
 
     print("Parsing PDF...")
     full_text, page_count = parse_pdf(sample_pdf)
-    prepared = prepare_for_analysis(full_text)
+    prepared, _ = prepare_for_analysis(full_text)
     print(f"Prepared text length: {len(prepared)} chars (~{len(prepared)//4} tokens)")
 
     print("Running compliance analysis...")

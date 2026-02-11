@@ -43,6 +43,12 @@ def main():
     if st.session_state.get("last_result"):
         data = st.session_state["last_result"]
         st.success(f"Analysis complete. Pages: {data.get('page_count', 'N/A')}")
+        if warning := data.get("truncation_warning"):
+            st.warning(warning.get("message", "Document was truncated due to size."))
+            if recs := warning.get("recommendations"):
+                with st.expander("Recommendations for large documents"):
+                    for r in recs:
+                        st.markdown(f"- {r}")
         compliance = data.get("compliance", {})
         items = compliance.get("items", [])
         rows = []

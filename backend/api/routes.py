@@ -57,7 +57,7 @@ async def analyze(file: UploadFile = File(...)):
     if not full_text.strip():
         raise HTTPException(status_code=400, detail="PDF produced no text")
 
-    prepared = prepare_for_analysis(full_text)
+    prepared, was_truncated = prepare_for_analysis(full_text)
     try:
         result = run_compliance_analysis(prepared)
     except Exception as e:
@@ -67,10 +67,24 @@ async def analyze(file: UploadFile = File(...)):
     # Store for optional chat (same document)
     _document_store["default"] = full_text
 
-    return {
+    response = {
         "page_count": page_count,
         "compliance": result.model_dump(),
     }
+    if was_truncated:
+        response["truncation_warning"] = {
+            "message": (
+                "Your contract together with the analysis prompt exceeds the model's context limit (~1M tokens). "
+                "The document has been truncated: only the beginning and end were sent to the LLM. "
+                "Results may miss content in the middle."
+            ),
+            "recommendations": [
+                "Split the document into sections (e.g. by clauses) and analyze each section separately.",
+                "Chunk the contract into smaller parts and run analysis per chunk, then combine results.",
+                "Use a batch workflow: analyze chunks in parallel or sequence and merge compliance findings.",
+            ],
+        }
+    return response
 
 
 @router.post("/chat", response_model=ChatResponse)
