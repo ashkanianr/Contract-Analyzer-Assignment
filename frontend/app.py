@@ -82,10 +82,11 @@ def main():
             st.session_state["messages"].append({"role": "user", "content": user_msg})
             with st.spinner("Thinking…"):
                 try:
+                    history = st.session_state["messages"][:-1]
                     with httpx.Client(timeout=60.0) as client:
                         r = client.post(
                             f"{base}/chat",
-                            json={"message": user_msg},
+                            json={"message": user_msg, "messages": history},
                         )
                     r.raise_for_status()
                     reply = r.json().get("reply", "No reply.")

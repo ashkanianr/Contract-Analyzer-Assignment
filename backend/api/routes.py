@@ -18,6 +18,7 @@ router = APIRouter()
 
 class ChatRequest(BaseModel):
     message: str
+    messages: list[dict] | None = None
 
 
 class ChatResponse(BaseModel):
@@ -78,12 +79,13 @@ async def chat(body: ChatRequest):
     doc = _document_store.get("default", "")
     if not doc:
         return ChatResponse(reply="No document has been analyzed yet. Please upload and analyze a PDF first.")
-    from backend.compliance.llm_client import generate
+    from backend.compliance.llm_client import generate_chat
     from backend.compliance.prompts import CHAT_SYSTEM_TEMPLATE
 
     system = f"{CHAT_SYSTEM_TEMPLATE}\n\n## Contract text (excerpt)\n{doc[:30000]}"
+    full_messages = list(body.messages or []) + [{"role": "user", "content": body.message}]
     try:
-        reply = generate(body.message, system=system, json_mode=False)
+        reply = generate_chat(full_messages, system=system)
     except Exception as e:
         logger.exception("Chat failed")
         return ChatResponse(reply=f"Sorry, I could not process your question: {e}")
