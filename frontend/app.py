@@ -1,5 +1,6 @@
 """Streamlit UI: upload PDF, analyze, display compliance results. Chat is informational only."""
 import os
+import pandas as pd
 import streamlit as st
 import httpx
 
@@ -44,22 +45,20 @@ def main():
         st.success(f"Analysis complete. Pages: {data.get('page_count', 'N/A')}")
         compliance = data.get("compliance", {})
         items = compliance.get("items", [])
-        for i, item in enumerate(items):
-            state = item.get("compliance_state", "")
-            if state == "Fully Compliant":
-                badge = "🟢 Fully Compliant"
-            elif state == "Partially Compliant":
-                badge = "🟡 Partially Compliant"
-            else:
-                badge = "🔴 Non-Compliant"
-            with st.expander(f"**{i+1}. {item.get('compliance_question', 'Question')}** — {badge}", expanded=True):
-                quotes = item.get("relevant_quotes", "")
-                if isinstance(quotes, list):
-                    quotes = "\n".join(f"- {q}" for q in quotes)
-                st.markdown(f"**Relevant quotes**\n{quotes}")
-                st.markdown(f"**Rationale**\n{item.get('rationale', '')}")
-                if item.get("confidence") is not None:
-                    st.caption(f"Confidence: {item['confidence']}%")
+        rows = []
+        for item in items:
+            quotes = item.get("relevant_quotes", "")
+            if isinstance(quotes, list):
+                quotes = "\n".join(f"- {q}" for q in quotes) if quotes else ""
+            rows.append({
+                "Compliance Question": item.get("compliance_question", ""),
+                "Compliance State": item.get("compliance_state", ""),
+                "Confidence": f"{item['confidence']}%" if item.get("confidence") is not None else "-",
+                "Relevant Quotes": str(quotes),
+                "Rationale": item.get("rationale", ""),
+            })
+        df = pd.DataFrame(rows)
+        st.dataframe(df, use_container_width=True)
 
     # Chat (bonus) – informational only; use form so question is sent once
     st.markdown("---")
