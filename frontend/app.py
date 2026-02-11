@@ -58,6 +58,7 @@ def main():
                 "Rationale": item.get("rationale", ""),
             })
         df = pd.DataFrame(rows)
+        df.index = range(1, len(df) + 1)
         st.dataframe(df, use_container_width=True)
 
     # Chat (bonus) – informational only; use form so question is sent once
