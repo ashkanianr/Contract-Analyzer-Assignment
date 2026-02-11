@@ -9,7 +9,7 @@ This system checks **contract language** against five fixed compliance requireme
 ## Architecture
 
 - **Per-requirement evaluation**: The core model is one requirement at a time. For demo simplicity we batch all five into one LLM call when the document fits the context window; that is a batching optimization, not a conceptual dependency. Implementing 5 separate calls (Option B) would give the same logical model and better failure isolation.
-- **Pipeline**: PDF → parse (PyMuPDF) → preprocess (whitespace normalization) → one LLM call (Gemini Flash) → Pydantic validation → JSON response.
+- **Pipeline**: PDF → parse (pdfplumber) → preprocess (whitespace normalization) → one LLM call (Gemini Flash) → Pydantic validation → JSON response.
 
 ## LLM and hosting
 
@@ -18,7 +18,7 @@ This system checks **contract language** against five fixed compliance requireme
 
 ## PDF and preprocessing
 
-- **Library**: PyMuPDF for text extraction. Tables are extracted as raw text.
+- **Library**: pdfplumber for text extraction with improved table handling.
 - **Preprocessing**: Whitespace normalization only. Gemini 3 Flash has 1M input tokens (~2,500+ typical PDF pages); because the context window is that large, no sectionizing or chunking is needed. The full document is sent at once.
 
 ## Prompt and schema
